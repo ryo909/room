@@ -16,44 +16,132 @@ export default class MainScene extends Phaser.Scene {
     private taskManager!: TaskManager;
     private gridMatrix: number[][] = [];
 
-    private highlightGraphics!: Phaser.GameObjects.Graphics;
+    // Layers
+    private floorLayer!: Phaser.GameObjects.Container;
+    private shadowLayer!: Phaser.GameObjects.Container;
+    private objectLayer!: Phaser.GameObjects.Container;
+    private focusLayer!: Phaser.GameObjects.Container;
+    private fxLayer!: Phaser.GameObjects.Container;
+
+    // Focus visuals
+    private focusOutline!: Phaser.GameObjects.Image;
 
     private completedSessions: number = 0;
     private plantSprite: Phaser.GameObjects.Image | null = null;
+
+    // FX
+    private vignette!: Phaser.GameObjects.Image;
+    private noise!: Phaser.GameObjects.Image;
 
     constructor() {
         super('MainScene');
     }
 
     create() {
+        // Init Layers
+        this.floorLayer = this.add.container(0, 0).setDepth(0);
+        this.shadowLayer = this.add.container(0, 0).setDepth(1);
+        this.objectLayer = this.add.container(0, 0).setDepth(2);
+        this.focusLayer = this.add.container(0, 0).setDepth(3);
+        this.fxLayer = this.add.container(0, 0).setDepth(100);
+
         // 1. Initialize Map Data (0=Walkable, 1=Blocked)
         this.initializeMap();
 
-        // 2. Visuals - Floor & Walls
-        this.drawMap();
+        // 2. Visuals - Floor & Walls & Atmosphere
+        this.createAtmosphere();
 
-        // Highlight Graphics (Z-index above furniture, below UI)
-        this.highlightGraphics = this.add.graphics();
-        this.highlightGraphics.setDepth(10);
-
-        // 3. Furniture
+        // 3. Furniture (Sprites & Shadows)
         this.createFurniture();
 
         // 4. Pathfinding
         this.pathfinding = new Pathfinding();
         this.pathfinding.setup(this.gridMatrix);
 
-        // 5. Player
+        // 5. Player (Avatar)
         const startX = toWorld(2);
         const startY = toWorld(12);
         this.player = new Player(this, startX, startY);
-        this.player.setDepth(5);
+        this.player.setTexture('avatar_idle'); // Use sprite
+        this.objectLayer.add(this.player);
 
         // 6. Interaction & UI
         this.uiManager = new UIManager(this);
         this.timerSystem = new TimerSystem();
         this.taskManager = new TaskManager();
 
+        this.setupFocusVisuals();
+        this.setupGameSystems();
+
+        // 7. Input
+        this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+            const gx = toGrid(pointer.worldX);
+            const gy = toGrid(pointer.worldY);
+            this.handleMovementRequest(gx, gy);
+        });
+    }
+
+    private createAtmosphere() {
+        // Floor Tile
+        const floor = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'bg_floor');
+        floor.setOrigin(0, 0);
+        this.floorLayer.add(floor);
+
+        // FX in Top Layer
+        const frame = this.add.image(this.scale.width / 2, this.scale.height / 2, 'bg_frame').setOrigin(0.5);
+        this.fxLayer.add(frame);
+
+        this.vignette = this.add.image(this.scale.width / 2, this.scale.height / 2, 'fx_vignette')
+            .setOrigin(0.5).setAlpha(0.4);
+        this.fxLayer.add(this.vignette);
+
+        this.noise = this.add.image(this.scale.width / 2, this.scale.height / 2, 'fx_noise')
+            .setOrigin(0.5).setAlpha(0.15).setBlendMode(Phaser.BlendModes.OVERLAY);
+        this.fxLayer.add(this.noise);
+    }
+
+    private setupFocusVisuals() {
+        this.focusOutline = this.add.image(0, 0, 'ui_focus_outline').setOrigin(0.5).setAlpha(0);
+        this.focusLayer.add(this.focusOutline);
+
+        this.interactionManager = new InteractionManager(this, this.player);
+        this.interactionManager.onShowOpenButton = (f) => {
+            this.uiManager.showOpenButton(f, this.cameras.main);
+
+            // Show Focus
+            const centerPos = f.tilePositions[0];
+            if (centerPos) {
+                if (f.id === 'desk') this.updateFocus(9.5, 6.5);
+                else if (f.id === 'sofa') this.updateFocus(16, 6.5);
+                else if (f.id === 'letter_stand') this.updateFocus(7, 12);
+                else if (f.id === 'sandglass') this.updateFocus(12, 8);
+                else if (f.id === 'plant') this.updateFocus(14, 9);
+                else if (f.id === 'window') this.updateFocus(10, 0);
+                else if (f.id === 'door') this.updateFocus(0, 12);
+            }
+        };
+
+        this.interactionManager.onHideOpenButton = () => {
+            this.uiManager.hideOpenButton();
+            this.focusOutline.setAlpha(0);
+        };
+    }
+
+    private updateFocus(wx_grid: number, wy_grid: number) {
+        const x = toWorld(wx_grid);
+        const y = toWorld(wy_grid);
+        this.focusOutline.setPosition(x, y);
+        this.focusOutline.setAlpha(1);
+        this.tweens.add({
+            targets: this.focusOutline,
+            alpha: 0.6,
+            yoyo: true,
+            duration: 800,
+            repeat: -1
+        });
+    }
+
+    private setupGameSystems() {
         // Wire Timer -> UI
         this.timerSystem.onTick = (remaining) => {
             this.uiManager.updateTimerDisplay(remaining);
@@ -77,7 +165,6 @@ export default class MainScene extends Phaser.Scene {
                 const mins = parseInt((action as string).split('_')[1]);
                 this.timerSystem.startFocus(mins);
             }
-
             if (action === 'reset_data') {
                 localStorage.clear();
                 location.reload();
@@ -88,34 +175,13 @@ export default class MainScene extends Phaser.Scene {
         this.taskManager.onTasksUpdated = (tasks) => {
             this.uiManager.updateTaskBoard(tasks);
         };
-
-        // Wire UI -> Tasks
         this.uiManager.onTaskAction = (action, id, status, title) => {
             if (action === 'add' && title) this.taskManager.addTask(title);
             if (action === 'move' && id && status) this.taskManager.moveTask(id, status);
             if (action === 'delete' && id) this.taskManager.deleteTask(id);
         };
 
-        this.interactionManager = new InteractionManager(this, this.player);
-        this.interactionManager.onShowOpenButton = (f) => {
-            this.uiManager.showOpenButton(f, this.cameras.main);
-
-            // Draw Outline
-            this.highlightGraphics.clear();
-            this.highlightGraphics.lineStyle(2, 0xffd700, 0.8);
-            f.tilePositions.forEach(pos => {
-                const wx = toWorld(pos.x);
-                const wy = toWorld(pos.y);
-                this.highlightGraphics.strokeRect(wx - 16, wy - 16, 32, 32);
-            });
-        };
-
-        this.interactionManager.onHideOpenButton = () => {
-            this.uiManager.hideOpenButton();
-            this.highlightGraphics.clear();
-        };
-
-        // Hook UI Show Panel to trigger Task update
+        // Hook UI Show Panel
         const originalShowPanel = this.uiManager.showPanel.bind(this.uiManager);
         this.uiManager.showPanel = (f) => {
             originalShowPanel(f);
@@ -123,44 +189,16 @@ export default class MainScene extends Phaser.Scene {
                 this.uiManager.updateTaskBoard(this.taskManager.getTasks());
             }
         }
-
-        // 7. Input
-        this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-            const gx = toGrid(pointer.worldX);
-            const gy = toGrid(pointer.worldY);
-            this.handleMovementRequest(gx, gy);
-        });
     }
 
     private initializeMap() {
-        // 20x15 grid
         for (let y = 0; y < 15; y++) {
             const row: number[] = [];
             for (let x = 0; x < 20; x++) {
-                // Walls (Outer rim)
-                if (x === 0 || x === 19 || y === 0 || y === 14) {
-                    row.push(1);
-                } else {
-                    row.push(0);
-                }
+                if (x === 0 || x === 19 || y === 0 || y === 14) row.push(1);
+                else row.push(0);
             }
             this.gridMatrix.push(row);
-        }
-    }
-
-    private drawMap() {
-        for (let y = 0; y < 15; y++) {
-            for (let x = 0; x < 20; x++) {
-                const wx = toWorld(x);
-                const wy = toWorld(y);
-                const isWall = this.gridMatrix[y][x] === 1;
-
-                if (!isWall) {
-                    this.add.image(wx, wy, 'floor');
-                } else {
-                    this.add.image(wx, wy, 'wall');
-                }
-            }
         }
     }
 
@@ -171,31 +209,45 @@ export default class MainScene extends Phaser.Scene {
             }
         };
 
-        // Desk (2x2): (9,6),(10,6),(9,7),(10,7)
-        this.add.image(toWorld(9.5), toWorld(6.5), 'desk');
+        const addObj = (key: string, gx: number, gy: number, shadowScale = 1.0) => {
+            const x = toWorld(gx);
+            const y = toWorld(gy);
+
+            // Shadow
+            const shadow = this.add.image(x, y + 10, 'shadow_oval')
+                .setOrigin(0.5).setScale(shadowScale).setAlpha(0.5);
+            this.shadowLayer.add(shadow);
+
+            // Object
+            const obj = this.add.image(x, y, key).setOrigin(0.5);
+            this.objectLayer.add(obj);
+            return obj;
+        };
+
+        // Desk (2x2)
+        addObj('obj_desk', 9.5, 6.5, 0.8);
         block(9, 6); block(10, 6); block(9, 7); block(10, 7);
 
-        // Sofa (3x2): (15,6)..(17,7)
-        this.add.image(toWorld(16), toWorld(6.5), 'sofa');
+        // Sofa (3x2)
+        addObj('obj_sofa', 16, 6.5, 0.9);
         block(15, 6); block(16, 6); block(17, 6);
         block(15, 7); block(16, 7); block(17, 7);
 
-        // Letter Stand (3x1): (6,12)..(8,12)
-        this.add.image(toWorld(7), toWorld(12), 'letter_stand');
+        // Letter Stand (3x1)
+        addObj('obj_letterstand', 7, 12, 0.7);
         block(6, 12); block(7, 12); block(8, 12);
 
-        // Sandglass (1x1): (12,8)
-        this.add.image(toWorld(12), toWorld(8), 'sandglass');
+        // Sandglass (1x1)
+        addObj('obj_hourglass', 12, 8, 0.5);
         block(12, 8);
 
-        // Plant (1x1): (14,9)
-        this.plantSprite = this.add.image(toWorld(14), toWorld(9), 'plant');
-        this.plantSprite.setScale(0.6); // Start small
+        // Plant (1x1)
+        this.plantSprite = addObj('obj_plant_stage0', 14, 9, 0.5);
         block(14, 9);
 
-        // Window & Door (Visual Only, no block needed if on wall)
-        // Window x=8..12, y=0
-        // Door y=11..13, x=0
+        // Window & Door (Visual)
+        addObj('obj_window', 10, 0, 0);
+        addObj('obj_door', 0, 12, 0).setAngle(90);
     }
 
     private async handleMovementRequest(gx: number, gy: number) {
@@ -213,45 +265,26 @@ export default class MainScene extends Phaser.Scene {
 
     private handleTimerComplete() {
         this.completedSessions++;
+        if ((navigator as any).vibrate) (navigator as any).vibrate([200, 100, 200]);
 
-        // Haptics
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-
-        // Visual: Particles at Desk
-        const wx = toWorld(9.5);
-        const wy = toWorld(6.5);
-
-        const particles = this.add.particles(wx, wy, 'floor', {
-            speed: 100,
-            scale: { start: 0.5, end: 0 },
-            blendMode: 'ADD',
-            lifespan: 1000,
-            gravityY: -50,
-            quantity: 20,
-            tint: 0xffff00
-        });
-
-        this.time.delayedCall(1500, () => {
-            particles.destroy();
-        });
-
-        // Plant Growth
         this.updatePlantGrowth();
-
-        alert("Session Complete! Take a break.");
+        alert("Session Complete!");
     }
 
     private updatePlantGrowth() {
         if (!this.plantSprite) return;
 
-        let scale = 0.6;
-        if (this.completedSessions >= 3) scale = 0.8;
-        if (this.completedSessions >= 6) scale = 1.2;
+        let texture = 'obj_plant_stage0';
+        if (this.completedSessions >= 3) texture = 'obj_plant_stage1';
+        if (this.completedSessions >= 6) texture = 'obj_plant_stage2';
+        if (this.completedSessions >= 9) texture = 'obj_plant_stage3';
+
+        this.plantSprite.setTexture(texture);
 
         this.tweens.add({
             targets: this.plantSprite,
-            scale: scale,
-            duration: 1000,
+            scale: { from: 0.8, to: 1.0 },
+            duration: 500,
             ease: 'Bounce.easeOut'
         });
     }

@@ -6,65 +6,36 @@ export default class PreloadScene extends Phaser.Scene {
     }
 
     preload() {
-        // Generate placeholder textures programmatically to avoid external assets for now
+        this.load.setBaseURL(import.meta.env.BASE_URL);
 
-        // 1. Grid Tile (32x32)
-        const graphics = this.make.graphics({ x: 0, y: 0 });
+        // Background / FX
+        this.load.image('bg_floor', 'assets/desk_assets_b_flat/bg_floor.png');
+        this.load.image('bg_frame', 'assets/desk_assets_b_flat/bg_frame.png');
+        this.load.image('fx_vignette', 'assets/desk_assets_b_flat/fx_vignette.png');
+        this.load.image('fx_noise', 'assets/desk_assets_b_flat/fx_noise.png');
 
-        // Floor (Beige/Wood)
-        graphics.fillStyle(0xe0cda9);
-        graphics.fillRect(0, 0, 32, 32);
-        graphics.lineStyle(1, 0xc0a080);
-        graphics.strokeRect(0, 0, 32, 32);
-        graphics.generateTexture('floor', 32, 32);
-        graphics.clear();
+        // Common shadow
+        this.load.image('shadow_oval', 'assets/desk_assets_b_flat/shadow_oval.png');
 
-        // Wall (Dark Wood)
-        graphics.fillStyle(0x5c4033);
-        graphics.fillRect(0, 0, 32, 32);
-        graphics.lineStyle(1, 0x3d2b1f);
-        graphics.strokeRect(0, 0, 32, 32);
-        graphics.generateTexture('wall', 32, 32);
-        graphics.clear();
+        // Objects
+        this.load.image('obj_desk', 'assets/desk_assets_b_flat/obj_desk.png');
+        this.load.image('obj_letterstand', 'assets/desk_assets_b_flat/obj_letterstand.png');
+        this.load.image('obj_hourglass', 'assets/desk_assets_b_flat/obj_hourglass.png');
+        this.load.image('obj_sofa', 'assets/desk_assets_b_flat/obj_sofa.png');
+        this.load.image('obj_window', 'assets/desk_assets_b_flat/obj_window.png');
+        this.load.image('obj_door', 'assets/desk_assets_b_flat/obj_door.png');
+        this.load.image('obj_plant_stage0', 'assets/desk_assets_b_flat/obj_plant_stage0.png');
+        this.load.image('obj_plant_stage1', 'assets/desk_assets_b_flat/obj_plant_stage1.png');
+        this.load.image('obj_plant_stage2', 'assets/desk_assets_b_flat/obj_plant_stage2.png');
+        this.load.image('obj_plant_stage3', 'assets/desk_assets_b_flat/obj_plant_stage3.png');
 
-        // Player (Circle)
-        graphics.fillStyle(0xffffff);
-        graphics.fillCircle(16, 16, 12);
-        graphics.generateTexture('player', 32, 32);
-        graphics.clear();
+        // Avatar
+        this.load.image('avatar_idle', 'assets/desk_assets_b_flat/avatar_idle.png');
 
-        // Furniture Textures (Placeholders)
-        // Desk (2x2) - 64x64
-        graphics.fillStyle(0x8b4513); // SaddleBrown
-        graphics.fillRect(0, 0, 64, 64);
-        graphics.generateTexture('desk', 64, 64);
-        graphics.clear();
-
-        // Sofa (3x2) - 96x64
-        graphics.fillStyle(0x4682b4); // SteelBlue
-        graphics.fillRect(0, 0, 96, 64);
-        graphics.generateTexture('sofa', 96, 64);
-        graphics.clear();
-
-        // Letter Stand (3x1) - 96x32
-        graphics.fillStyle(0xd2b48c); // Tan
-        graphics.fillRect(0, 0, 96, 32);
-        graphics.generateTexture('letter_stand', 96, 32);
-        graphics.clear();
-
-        // Sandglass Rack (1x1) - 32x32
-        graphics.fillStyle(0xffd700); // Gold
-        graphics.fillRect(0, 0, 32, 32);
-        graphics.generateTexture('sandglass', 32, 32);
-        graphics.clear();
-
-        // Plant (1x1) - 32x32
-        graphics.fillStyle(0x228b22); // ForestGreen
-        graphics.fillCircle(16, 16, 14);
-        graphics.generateTexture('plant', 32, 32);
-        graphics.clear();
-
-        // Door/Window will be treated as visual markers on walls for now
+        // UI
+        this.load.image('ui_button_pill', 'assets/desk_assets_b_flat/ui_button_pill.png');
+        this.load.image('ui_panel_bg', 'assets/desk_assets_b_flat/ui_panel_bg.png');
+        this.load.image('ui_focus_outline', 'assets/desk_assets_b_flat/ui_focus_outline.png');
     }
 
     create() {
