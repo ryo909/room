@@ -7,6 +7,6 @@ export default class UIScene extends Phaser.Scene {
 
     create() {
         // This scene runs in parallel for HUD
-        this.add.text(10, 460, 'UI Overlay', { fontSize: '12px', color: '#ffffff' });
+        // Debug overlay hidden by default
     }
 }
