@@ -1,6 +1,6 @@
 export const TILE_SIZE = 32;
-export const MAP_WIDTH = 20;
-export const MAP_HEIGHT = 15;
+export const MAP_WIDTH = 60;
+export const MAP_HEIGHT = 40;
 
 export const toWorld = (gridPos: number) => gridPos * TILE_SIZE + TILE_SIZE / 2;
 export const toGrid = (worldPos: number) => Math.floor(worldPos / TILE_SIZE);

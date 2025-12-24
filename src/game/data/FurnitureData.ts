@@ -6,104 +6,83 @@ export type Anchor = {
 
 export type FurnitureDef = {
     id: string;
-    name: string;
+    name: string; // Used for key lookups, English ID
+    displayName: string; // Japanese label
     type: 'desk' | 'sofa' | 'rack' | 'letter' | 'plant' | 'window' | 'door';
-    tilePositions: { x: number, y: number }[]; // Occupied tiles
-    anchors: Anchor[]; // Ordered list (Primary, Secondary...)
+    tilePositions: { x: number, y: number }[];
+    anchors: Anchor[];
     proximityRadius: number;
 };
+
+// Map size 60x40
+// Center approx (30, 20)
 
 export const FURNITURE_DATA: FurnitureDef[] = [
     {
         id: 'desk',
         name: 'Desk',
+        displayName: 'タイマー',
         type: 'desk',
-        tilePositions: [{ x: 9, y: 6 }, { x: 10, y: 6 }, { x: 9, y: 7 }, { x: 10, y: 7 }],
+        tilePositions: [{ x: 30, y: 20 }, { x: 31, y: 20 }, { x: 30, y: 21 }, { x: 31, y: 21 }],
         anchors: [
-            { x: 9, y: 8, direction: 'UP' },
-            { x: 10, y: 8, direction: 'UP' },
-            { x: 8, y: 7, direction: 'RIGHT' },
-            { x: 11, y: 7, direction: 'LEFT' }
+            { x: 30, y: 22, direction: 'UP' },
+            { x: 31, y: 22, direction: 'UP' }
         ],
-        proximityRadius: 1.6
-    },
-    {
-        id: 'sofa',
-        name: 'Sofa',
-        type: 'sofa',
-        tilePositions: [{ x: 15, y: 6 }, { x: 16, y: 6 }, { x: 17, y: 6 }, { x: 15, y: 7 }, { x: 16, y: 7 }, { x: 17, y: 7 }],
-        anchors: [
-            { x: 16, y: 8, direction: 'UP' },
-            { x: 14, y: 7, direction: 'RIGHT' },
-            { x: 18, y: 7, direction: 'LEFT' },
-            { x: 16, y: 5, direction: 'DOWN' }
-        ],
-        proximityRadius: 1.6
-    },
-    {
-        id: 'sandglass',
-        name: 'Sandglass',
-        type: 'rack',
-        tilePositions: [{ x: 12, y: 8 }],
-        anchors: [
-            { x: 12, y: 9, direction: 'UP' },
-            { x: 11, y: 9, direction: 'RIGHT' },
-            { x: 13, y: 9, direction: 'LEFT' },
-            { x: 12, y: 10, direction: 'UP' }
-        ],
-        proximityRadius: 1.6
+        proximityRadius: 2.0
     },
     {
         id: 'letter_stand',
         name: 'Letter Stand',
+        displayName: 'タスク',
         type: 'letter',
-        tilePositions: [{ x: 6, y: 12 }, { x: 7, y: 12 }, { x: 8, y: 12 }],
+        tilePositions: [{ x: 33, y: 20 }, { x: 34, y: 20 }], // Near desk
         anchors: [
-            { x: 7, y: 13, direction: 'UP' },
-            { x: 6, y: 13, direction: 'UP' },
-            { x: 8, y: 13, direction: 'UP' },
-            { x: 7, y: 11, direction: 'DOWN' }
+            { x: 33, y: 21, direction: 'UP' }
         ],
-        proximityRadius: 1.6
+        proximityRadius: 1.8
+    },
+    {
+        id: 'sandglass',
+        name: 'Sandglass',
+        displayName: '実績', // Changed to Trophy/Achievement as per "Trophy Shelf"
+        type: 'rack',
+        tilePositions: [{ x: 40, y: 8 }], // Top right area
+        anchors: [
+            { x: 40, y: 9, direction: 'UP' }
+        ],
+        proximityRadius: 1.8
+    },
+    {
+        id: 'music_station',
+        name: 'Music Station',
+        displayName: '音楽',
+        type: 'window', // Reuse 'window' type logic for atmosphere
+        tilePositions: [{ x: 5, y: 5 }], // Top left
+        anchors: [
+            { x: 6, y: 6, direction: 'UP' }
+        ],
+        proximityRadius: 1.8
     },
     {
         id: 'plant',
         name: 'Plant',
+        displayName: '植物',
         type: 'plant',
-        tilePositions: [{ x: 14, y: 9 }],
+        tilePositions: [{ x: 50, y: 30 }], // Bottom right
         anchors: [
-            { x: 14, y: 10, direction: 'UP' },
-            { x: 13, y: 10, direction: 'RIGHT' },
-            { x: 15, y: 10, direction: 'LEFT' },
-            { x: 14, y: 11, direction: 'UP' }
+            { x: 49, y: 30, direction: 'RIGHT' }
         ],
-        proximityRadius: 1.6
-    },
-    // Window and Door are special visual walls, but actionable.
-    {
-        id: 'window',
-        name: 'Window',
-        type: 'window',
-        tilePositions: [], // No floor occupation
-        anchors: [
-            { x: 10, y: 2, direction: 'UP' },
-            { x: 9, y: 2, direction: 'UP' },
-            { x: 11, y: 2, direction: 'UP' },
-            { x: 10, y: 3, direction: 'UP' }
-        ],
-        proximityRadius: 1.2
+        proximityRadius: 1.8
     },
     {
         id: 'door',
         name: 'Door',
+        displayName: '設定',
         type: 'door',
-        tilePositions: [], // No floor occupation
+        tilePositions: [],
         anchors: [
-            { x: 2, y: 12, direction: 'LEFT' },
-            { x: 2, y: 11, direction: 'LEFT' },
-            { x: 2, y: 13, direction: 'LEFT' },
-            { x: 3, y: 12, direction: 'LEFT' }
+            { x: 2, y: 35, direction: 'LEFT' } // Bottom left entrance
         ],
-        proximityRadius: 1.2
+        proximityRadius: 2.0
     }
 ];

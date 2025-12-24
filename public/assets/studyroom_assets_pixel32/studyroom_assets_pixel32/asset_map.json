@@ -1,0 +1,78 @@
+{
+  "recommended_folder": "public/assets/studyroom_pixel32/",
+  "tile_size_logical": "32x32 (tiles saved as 64x64 via upscale x2 for crisp pixels).",
+  "world_expand_note": "To make a bigger room, increase tilemap dimensions (e.g., 60x40 tiles) and set camera bounds to world size; keep UI fixed.",
+  "phaser_keys": {
+    "tile_floor": "tile_floor_32",
+    "tile_rug": "tile_rug_32",
+    "walls": [
+      "tile_wall_top",
+      "tile_wall_bottom",
+      "tile_wall_left",
+      "tile_wall_right",
+      "tile_wall_corner_tl",
+      "tile_wall_corner_tr",
+      "tile_wall_corner_bl",
+      "tile_wall_corner_br"
+    ],
+    "shadow": "shadow_oval_big",
+    "avatar": "avatar_idle",
+    "objects": [
+      "obj_timer_station",
+      "obj_task_board",
+      "obj_settings_door",
+      "obj_trophy_shelf",
+      "obj_music_station"
+    ],
+    "plants": [
+      "obj_plant_stage0",
+      "obj_plant_stage1",
+      "obj_plant_stage2",
+      "obj_plant_stage3"
+    ],
+    "ui": [
+      "ui_panel_bg",
+      "ui_button_pill",
+      "ui_focus_outline"
+    ],
+    "icons": [
+      "icon_tomato",
+      "icon_check",
+      "icon_gear",
+      "icon_trophy",
+      "icon_music"
+    ]
+  },
+  "preload_example": [
+    "this.load.setBaseURL(import.meta.env.BASE_URL);",
+    "this.load.image('tile_floor_32', 'assets/studyroom_pixel32/tile_floor_32.png');",
+    "this.load.image('tile_rug_32', 'assets/studyroom_pixel32/tile_rug_32.png');",
+    "this.load.image('tile_wall_top', 'assets/studyroom_pixel32/tile_wall_top.png');",
+    "this.load.image('tile_wall_bottom', 'assets/studyroom_pixel32/tile_wall_bottom.png');",
+    "this.load.image('tile_wall_left', 'assets/studyroom_pixel32/tile_wall_left.png');",
+    "this.load.image('tile_wall_right', 'assets/studyroom_pixel32/tile_wall_right.png');",
+    "this.load.image('tile_wall_corner_tl', 'assets/studyroom_pixel32/tile_wall_corner_tl.png');",
+    "this.load.image('tile_wall_corner_tr', 'assets/studyroom_pixel32/tile_wall_corner_tr.png');",
+    "this.load.image('tile_wall_corner_bl', 'assets/studyroom_pixel32/tile_wall_corner_bl.png');",
+    "this.load.image('tile_wall_corner_br', 'assets/studyroom_pixel32/tile_wall_corner_br.png');",
+    "this.load.image('shadow_oval_big', 'assets/studyroom_pixel32/shadow_oval_big.png');",
+    "this.load.image('avatar_idle', 'assets/studyroom_pixel32/avatar_idle.png');",
+    "this.load.image('obj_timer_station', 'assets/studyroom_pixel32/obj_timer_station.png');",
+    "this.load.image('obj_task_board', 'assets/studyroom_pixel32/obj_task_board.png');",
+    "this.load.image('obj_settings_door', 'assets/studyroom_pixel32/obj_settings_door.png');",
+    "this.load.image('obj_trophy_shelf', 'assets/studyroom_pixel32/obj_trophy_shelf.png');",
+    "this.load.image('obj_music_station', 'assets/studyroom_pixel32/obj_music_station.png');",
+    "this.load.image('obj_plant_stage0', 'assets/studyroom_pixel32/obj_plant_stage0.png');",
+    "this.load.image('obj_plant_stage1', 'assets/studyroom_pixel32/obj_plant_stage1.png');",
+    "this.load.image('obj_plant_stage2', 'assets/studyroom_pixel32/obj_plant_stage2.png');",
+    "this.load.image('obj_plant_stage3', 'assets/studyroom_pixel32/obj_plant_stage3.png');",
+    "this.load.image('ui_panel_bg', 'assets/studyroom_pixel32/ui_panel_bg.png');",
+    "this.load.image('ui_button_pill', 'assets/studyroom_pixel32/ui_button_pill.png');",
+    "this.load.image('ui_focus_outline', 'assets/studyroom_pixel32/ui_focus_outline.png');",
+    "this.load.image('icon_tomato', 'assets/studyroom_pixel32/icon_tomato.png');",
+    "this.load.image('icon_check', 'assets/studyroom_pixel32/icon_check.png');",
+    "this.load.image('icon_gear', 'assets/studyroom_pixel32/icon_gear.png');",
+    "this.load.image('icon_trophy', 'assets/studyroom_pixel32/icon_trophy.png');",
+    "this.load.image('icon_music', 'assets/studyroom_pixel32/icon_music.png');"
+  ]
+}
